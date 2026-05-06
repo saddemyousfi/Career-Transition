@@ -1,199 +1,668 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saddem Yousfi | Professional Evolution</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #64ffda;
-            --bg: #0a192f;
-            --card: #112240;
-            --text: #ccd6f6;
-            --text-dim: #8892b0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saddem Yousfi — System Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --border: #21262d;
+    --border-bright: #30363d;
+    --green: #3fb950;
+    --green-dim: #1a7f37;
+    --cyan: #58a6ff;
+    --amber: #d29922;
+    --text: #e6edf3;
+    --text-dim: #7d8590;
+    --text-muted: #484f58;
+    --red: #f85149;
+    --purple: #bc8cff;
+  }
 
-        .container {
-            width: 90%;
-            max-width: 900px;
-            padding: 40px;
-            background: var(--card);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border: 1px solid rgba(100, 255, 218, 0.1);
-        }
+  html { background: var(--bg); }
 
-        header { text-align: center; margin-bottom: 60px; }
-        header h1 { font-size: 2rem; color: #fff; margin: 0; }
-        header p { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+  }
 
-        .timeline {
-            position: relative;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            margin: 100px 0;
-        }
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
 
-        #progress-bar {
-            position: absolute;
-            height: 100%;
-            width: 0%;
-            background: var(--primary);
-            box-shadow: 0 0 15px var(--primary);
-            transition: width 0.5s ease-out;
-        }
+  .terminal {
+    width: 100%;
+    max-width: 760px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border-bright), 0 30px 80px rgba(0,0,0,0.7);
+  }
 
-        .avatar {
-            position: absolute;
-            top: -50px;
-            left: 0%;
-            transform: translateX(-50%);
-            font-size: 40px;
-            transition: left 0.5s ease-out;
-            filter: drop-shadow(0 0 10px rgba(100, 255, 218, 0.5));
-            z-index: 10;
-        }
+  .terminal-bar {
+    background: #161b22;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-        .milestone {
-            position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
+  .dot-row { display: flex; gap: 6px; }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .dot:hover { opacity: 0.8; }
+  .dot.red { background: #ff5f57; }
+  .dot.amber { background: #febc2e; }
+  .dot.green { background: #28c840; }
 
-        .dot {
-            width: 16px;
-            height: 16px;
-            background: var(--bg);
-            border: 3px solid #233554;
-            border-radius: 50%;
-            transition: all 0.4s ease;
-        }
+  .terminal-title {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
 
-        .milestone.active .dot {
-            border-color: var(--primary);
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-        }
+  .terminal-body {
+    padding: 24px;
+    min-height: 500px;
+    position: relative;
+  }
 
-        .milestone .label {
-            position: absolute;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-dim);
-            transition: color 0.4s;
-        }
+  .line {
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s, transform 0.3s;
+  }
 
-        .milestone.active .label { color: #fff; }
+  .line.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-        .info-panel {
-            background: rgba(2, 12, 27, 0.7);
-            border-radius: 12px;
-            padding: 30px;
-            border-left: 4px solid var(--primary);
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+  .line.cmd { color: var(--green); }
+  .line.output { color: var(--text-dim); }
+  .line.info { color: var(--cyan); }
+  .line.success { color: var(--green); }
+  .line.warn { color: var(--amber); }
+  .line.error { color: var(--red); }
+  .line.accent { color: var(--purple); }
+  .line.bright { color: var(--text); font-weight: 600; }
+  .line.gap { margin-top: 8px; }
 
-        #info-title { color: var(--primary); font-weight: bold; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
-        #info-desc { line-height: 1.6; font-size: 0.95rem; color: var(--text-dim); }
+  .prompt { color: var(--green-dim); }
+  .at { color: var(--text-dim); }
+  .host { color: var(--cyan); }
 
-        @media (max-width: 600px) {
-            .milestone .label { display: none; }
-            header h1 { font-size: 1.5rem; }
-        }
-    </style>
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: var(--green);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+    border-radius: 1px;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Progress bar */
+  .progress-section {
+    margin-top: 8px;
+    display: none;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .progress-bar-outer {
+    background: var(--border);
+    border-radius: 2px;
+    height: 6px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  /* Age display */
+  .age-card {
+    display: none;
+    margin-top: 16px;
+    background: #0d1117;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--cyan);
+  }
+
+  .age-big {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .age-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .age-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  /* Skills grid */
+  .skills-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .skill-badge {
+    background: #161b22;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    transition: border-color 0.3s, color 0.3s;
+  }
+
+  .skill-badge.loaded {
+    border-color: var(--green-dim);
+    color: var(--green);
+  }
+
+  /* Timeline */
+  .timeline-section {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .tl-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+
+  .tl-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .tl-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 4px;
+  }
+
+  .tl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-bright);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .tl-dot.active {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  .tl-line {
+    width: 1px;
+    flex: 1;
+    background: var(--border);
+    margin-top: 4px;
+    min-height: 20px;
+  }
+
+  .tl-content { flex: 1; padding-bottom: 4px; }
+
+  .tl-year {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .tl-role {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+    margin: 2px 0;
+  }
+
+  .tl-org {
+    font-size: 12px;
+    color: var(--cyan);
+  }
+
+  /* Final CTA */
+  .cta-section {
+    display: none;
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid var(--green-dim);
+    border-radius: 6px;
+    background: rgba(63, 185, 80, 0.05);
+  }
+
+  .cta-title {
+    font-size: 14px;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .cta-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    background: #161b22;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .cta-link:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .cta-link svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    body { padding: 0; }
+    .terminal { border-radius: 0; border-left: none; border-right: none; }
+    .terminal-body { padding: 16px; }
+    .age-big { font-size: 36px; }
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Beruflicher Werdegang</h1>
-        <p>> saddem.evolution.init()</p>
-    </header>
-
-    <div class="timeline">
-        <div id="progress-bar"></div>
-        <div id="avatar" class="avatar">🎓</div>
-        
-        <!-- Milestones calculated by % -->
-        <div class="milestone" style="left: 0%;" data-index="0"><div class="dot"></div><div class="label">Studium</div></div>
-        <div class="milestone" style="left: 25%;" data-index="1"><div class="dot"></div><div class="label">Proofreading</div></div>
-        <div class="milestone" style="left: 50%;" data-index="2"><div class="dot"></div><div class="label">Aviation</div></div>
-        <div class="milestone" style="left: 75%;" data-index="3"><div class="dot"></div><div class="label">Integration</div></div>
-        <div class="milestone" style="left: 100%;" data-index="4"><div class="dot"></div><div class="label">IT / QA</div></div>
+<div class="terminal">
+  <div class="terminal-bar">
+    <div class="dot-row">
+      <div class="dot red"></div>
+      <div class="dot amber"></div>
+      <div class="dot green"></div>
     </div>
+    <div class="terminal-title">saddem@github — system_profile.sh — 80×32</div>
+  </div>
 
-    <div class="info-panel">
-        <div id="info-title">Status: Standby</div>
-        <div id="info-desc">Warten auf Systemstart...</div>
-    </div>
+  <div class="terminal-body" id="output">
+    <div class="cursor" id="cursor"></div>
+  </div>
 </div>
 
 <script>
-    const journeyData = [
-        { title: "B.A. ENGLISCH & LITERATUR", desc: "Grundsteinlegung für internationale Kommunikation und analytisches Denken in Tunis.", icon: "🎓" },
-        { title: "GOMYCODE | IT-REDAKTION", desc: "Qualitätssicherung von IT-Lehrmaterialien. Erste Berührungspunkte mit technischer Logik und Präzision.", icon: "✍️" },
-        { title: "ETIHAD AIRWAYS | FLIGHT ATTENDANT", desc: "Krisenmanagement und strikte Einhaltung internationaler Sicherheitsstandards (SOPs) weltweit.", icon: "✈️" },
-        { title: "DEUTSCH-INTEGRATION (B2)", desc: "Gezielte Vorbereitung auf den deutschen Arbeitsmarkt und Erwerb des TELC B2 Zertifikats.", icon: "🇩🇪" },
-        { title: "SOFTWARE QA SPEZIALISIERUNG", desc: "Fokus auf Testautomatisierung und ISTQB-Standards. Bereit für die Fachinformatiker Ausbildung 2026!" }
-    ];
+const output = document.getElementById('output');
+const cursorEl = document.getElementById('cursor');
 
-    const progressBar = document.getElementById('progress-bar');
-    const avatar = document.getElementById('avatar');
-    const milestones = document.querySelectorAll('.milestone');
-    const infoTitle = document.getElementById('info-title');
-    const infoDesc = document.getElementById('info-desc');
+function calcAge() {
+  const birth = new Date(1996, 9, 25);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
+}
 
-    let currentStep = 0;
+function calcDaysAlive() {
+  const birth = new Date(1996, 9, 25);
+  const now = new Date();
+  return Math.floor((now - birth) / 86400000).toLocaleString('de-DE');
+}
 
-    function updateJourney(step) {
-        const percentage = step * 25;
-        progressBar.style.width = `${percentage}%`;
-        avatar.style.left = `${percentage}%`;
-        avatar.innerText = journeyData[step].icon;
-        
-        milestones.forEach((m, idx) => {
-            if (idx <= step) m.classList.add('active');
-            else m.classList.remove('active');
+function calcDaysToBirthday() {
+  const now = new Date();
+  let next = new Date(now.getFullYear(), 9, 25);
+  if (next <= now) next.setFullYear(next.getFullYear() + 1);
+  return Math.ceil((next - now) / 86400000);
+}
+
+function addLine(text, cls, extraDelay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'line ' + (cls || 'output');
+      div.innerHTML = text;
+      output.insertBefore(div, cursorEl);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          div.classList.add('visible');
         });
+      });
+      output.scrollTop = output.scrollHeight;
+      resolve(div);
+    }, extraDelay);
+  });
+}
 
-        infoTitle.innerText = `PHASE ${step + 1}: ${journeyData[step].title}`;
-        infoDesc.innerText = journeyData[step].desc;
-    }
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
 
-    // Auto-run animation sequence
-    function runAnimation() {
-        const timer = setInterval(() => {
-            updateJourney(currentStep);
-            currentStep++;
-            if (currentStep >= journeyData.length) clearInterval(timer);
-        }, 1800);
-    }
+async function typeCommand(cmd, totalMs = 600) {
+  const div = document.createElement('div');
+  div.className = 'line cmd visible';
+  div.innerHTML = `<span class="prompt">saddem</span><span class="at">@</span><span class="host">github</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> `;
+  output.insertBefore(div, cursorEl);
 
-    // Start when page is loaded
-    window.onload = runAnimation;
+  const span = document.createElement('span');
+  div.appendChild(span);
+
+  const perChar = totalMs / cmd.length;
+  for (let c of cmd) {
+    span.textContent += c;
+    await delay(perChar);
+  }
+  output.scrollTop = output.scrollHeight;
+}
+
+function showElement(el, displayType = 'block') {
+  el.style.display = displayType;
+  requestAnimationFrame(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    el.style.transition = 'opacity 0.4s, transform 0.4s';
+    requestAnimationFrame(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    });
+  });
+}
+
+async function animateProgress(bar, targetPct, durationMs) {
+  const steps = 40;
+  const stepMs = durationMs / steps;
+  for (let i = 1; i <= steps; i++) {
+    bar.style.width = (targetPct * i / steps) + '%';
+    await delay(stepMs);
+  }
+}
+
+async function run() {
+  await delay(400);
+
+  await addLine('Linux version 6.5.0-saddem-amd64  #1 SMP PREEMPT', 'output');
+  await delay(150);
+  await addLine('[    0.000] Initializing subject profile...', 'output');
+  await delay(200);
+  await addLine('[    0.312] Loading biographical data from /proc/saddem', 'output');
+  await delay(300);
+  await addLine('[    0.891] ✓ Kernel modules loaded successfully', 'success gap');
+
+  await delay(500);
+
+  await typeCommand('./identify --subject Saddem_Yousfi --verbose');
+  await delay(300);
+
+  await addLine('', 'output');
+  await addLine('┌─────────────────────────────────────────┐', 'output');
+  await addLine('│         SUBJECT IDENTIFICATION          │', 'output');
+  await addLine('└─────────────────────────────────────────┘', 'output');
+  await delay(200);
+  await addLine('  NAME    : Saddem Yousfi', 'bright');
+  await delay(100);
+  await addLine('  ORIGIN  : Sousse, Tunisia  →  Tunis, Tunisia', 'output');
+  await delay(100);
+  await addLine('  ROLE    : Software QA Engineer (in training)', 'info');
+  await delay(100);
+  await addLine('  TARGET  : Fachinformatiker Ausbildung 2026 🇩🇪', 'warn');
+  await delay(400);
+
+  await addLine('', 'output');
+  await typeCommand('calc_age --dob 1996-10-25 --realtime');
+  await delay(300);
+
+  const ageCard = document.createElement('div');
+  ageCard.className = 'age-card';
+  ageCard.innerHTML = `
+    <div class="age-big">${calcAge()}</div>
+    <div class="age-label">Jahre alt  ·  geboren am 25. Oktober 1996</div>
+    <div class="age-sub">
+      ${calcDaysAlive()} Tage gelebt  ·  noch ${calcDaysToBirthday()} Tage bis zum nächsten Geburtstag
+    </div>
+  `;
+  output.insertBefore(ageCard, cursorEl);
+  showElement(ageCard, 'block');
+  await delay(600);
+
+  await addLine('', 'output');
+  await typeCommand('./scan_skills --format=grid');
+  await delay(300);
+  await addLine('Scanning installed capabilities...', 'output');
+  await delay(200);
+
+  const skillsGrid = document.createElement('div');
+  skillsGrid.className = 'skills-grid';
+  const skills = [
+    'Python', 'JavaScript', 'HTML5/CSS3',
+    'Playwright', 'Selenium', 'Robot FW',
+    'Postman', 'Git/GitHub', 'Jenkins CI',
+    'Jira/Xray', 'Linux', 'Agile/Scrum',
+  ];
+  skills.forEach(s => {
+    const b = document.createElement('div');
+    b.className = 'skill-badge';
+    b.textContent = s;
+    skillsGrid.appendChild(b);
+  });
+  output.insertBefore(skillsGrid, cursorEl);
+  showElement(skillsGrid, 'grid');
+
+  const badges = skillsGrid.querySelectorAll('.skill-badge');
+  for (let i = 0; i < badges.length; i++) {
+    await delay(80);
+    badges[i].classList.add('loaded');
+    await addLine(`  [✓] ${skills[i]} — loaded`, 'success');
+  }
+
+  await delay(600);
+  await addLine('', 'output');
+  await addLine('12 / 12 modules loaded  [100%]', 'success');
+
+  await delay(400);
+  await addLine('', 'output');
+  await typeCommand('git log --oneline --career');
+  await delay(300);
+
+  const tlSection = document.createElement('div');
+  tlSection.className = 'timeline-section';
+
+  const journey = [
+    { year: '2015–2018', role: 'B.A. Englisch & Literatur', org: 'Universität Tunis' },
+    { year: '2020', role: 'B2B Kundenberater', org: 'National Pen GmbH' },
+    { year: '2021', role: 'IT-Korrektor & Übersetzer', org: 'GoMyCode' },
+    { year: '2021–2023', role: 'Flight Attendant', org: 'Etihad Airways, Abu Dhabi' },
+    { year: '2024–heute', role: 'Freiberuflicher Übersetzer + B2 Deutsch', org: 'Upwork · Boosteno' },
+    { year: '2025', role: 'IT-Praktikum', org: 'SWS Informatique, Tunis' },
+    { year: '2025–2026', role: 'QA Training + ISTQB CTFL', org: 'Playwright · Selenium · Jenkins' },
+    { year: '2026 →', role: 'Fachinformatiker Ausbildung', org: 'Ziel: Deutschland 🇩🇪' },
+  ];
+
+  journey.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'tl-item';
+    el.innerHTML = `
+      <div class="tl-dot-wrap">
+        <div class="tl-dot"></div>
+        ${i < journey.length - 1 ? '<div class="tl-line"></div>' : ''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-year">${item.year}</div>
+        <div class="tl-role">${item.role}</div>
+        <div class="tl-org">${item.org}</div>
+      </div>
+    `;
+    tlSection.appendChild(el);
+  });
+
+  output.insertBefore(tlSection, cursorEl);
+  showElement(tlSection, 'block');
+
+  const items = tlSection.querySelectorAll('.tl-item');
+  const dots = tlSection.querySelectorAll('.tl-dot');
+  for (let i = 0; i < items.length; i++) {
+    await delay(200);
+    items[i].classList.add('visible');
+    dots[i].classList.add('active');
+    output.scrollTop = output.scrollHeight;
+  }
+
+  await delay(600);
+  await addLine('', 'output');
+  await addLine('8 commits  ·  10 Jahre Erfahrung in 4 Ländern  ·  4 Sprachen', 'accent');
+
+  await delay(500);
+  await addLine('', 'output');
+  await typeCommand('uptime --motivation');
+  await delay(300);
+
+  const progSection = document.createElement('div');
+  progSection.className = 'progress-section';
+  progSection.innerHTML = `
+    <div class="progress-label">Deutsch-Niveau</div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb1"></div></div>
+    <br>
+    <div class="progress-label">QA / Testing Skills</div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb2"></div></div>
+    <br>
+    <div class="progress-label">Motivation für Deutschland</div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb3" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></div></div>
+  `;
+  output.insertBefore(progSection, cursorEl);
+  showElement(progSection, 'block');
+
+  await animateProgress(document.getElementById('pb1'), 80, 800);
+  await addLine('  Deutsch: B2 (TELC certified)', 'output');
+  await animateProgress(document.getElementById('pb2'), 75, 700);
+  await addLine('  QA/Testing: ISTQB CTFL ✓', 'output');
+  await animateProgress(document.getElementById('pb3'), 100, 600);
+  await addLine('  Motivation: OVERFLOW — limits exceeded', 'warn');
+
+  await delay(600);
+  await addLine('', 'output');
+  await addLine('═══════════════════════════════════════════════', 'output');
+  await delay(300);
+
+  const cta = document.createElement('div');
+  cta.className = 'cta-section';
+  cta.innerHTML = `
+    <div class="cta-title">// Bereit für den nächsten Schritt ↗</div>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+      Ich suche eine <strong style="color:var(--text)">Fachinformatiker Ausbildung (Anwendungsentwicklung oder Systemintegration)</strong>
+      ab 2026 in Deutschland. ISTQB zertifiziert, B2 Deutsch, praktische Erfahrung mit
+      Playwright, Selenium, Jenkins und Agile/Scrum.
+    </div>
+    <div class="cta-links">
+      <a class="cta-link" href="https://github.com/SaddamYousfi" target="_blank">
+        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a class="cta-link" href="mailto:saddem.yousfi@example.com">
+        <svg viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/></svg>
+        E-Mail
+      </a>
+      <a class="cta-link" href="https://linkedin.com/in/saddemyousfi" target="_blank">
+        <svg viewBox="0 0 16 16"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+        LinkedIn
+      </a>
+    </div>
+  `;
+  output.insertBefore(cta, cursorEl);
+  showElement(cta, 'block');
+
+  await delay(400);
+  await addLine('', 'output');
+  await addLine('[  OK  ] Profile loaded. System ready.', 'success');
+  await addLine('', 'output');
+  await addLine(`<span class="prompt">saddem</span><span class="at">@</span><span class="host">github</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> `, 'cmd');
+
+  output.scrollTop = output.scrollHeight;
+}
+
+run();
 </script>
-
 </body>
 </html>
