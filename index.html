@@ -38,6 +38,7 @@
             padding: 2rem 1rem;
             position: relative;
             overflow-x: hidden;
+            pointer-events: none;      /* ← fix: Klicks passieren dem Canvas */
         }
 
         canvas#matrix {
@@ -48,7 +49,7 @@
             height: 100%;
             z-index: -1;
             opacity: 0.15;
-            pointer-events: auto; /* Allow clicks for color cycling */
+            pointer-events: auto;      /* ← Canvas nimmt Klicks an */
             cursor: crosshair;
         }
 
@@ -70,6 +71,7 @@
             overflow: hidden;
             box-shadow: 0 0 0 1px var(--border-bright), 0 30px 80px rgba(0,0,0,0.7);
             z-index: 1;
+            pointer-events: auto;      /* ← Terminal bleibt klickbar */
         }
 
         .terminal-bar {
@@ -82,12 +84,7 @@
         }
 
         .dot-row { display: flex; gap: 6px; }
-        .dot {
-            width: 12px; height: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; transition: opacity 0.2s; }
         .dot:hover { opacity: 0.8; }
         .dot.red { background: #ff5f57; }
         .dot.amber { background: #febc2e; }
@@ -119,11 +116,7 @@
             transform: translateY(4px);
             transition: opacity 0.3s, transform 0.3s;
         }
-
-        .line.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .line.visible { opacity: 1; transform: translateY(0); }
 
         .line.cmd { color: var(--green); }
         .line.output { color: var(--text-dim); }
@@ -185,87 +178,19 @@
         .cta-link:hover { border-color: var(--cyan); color: var(--cyan); }
         .cta-link svg { width: 14px; height: 14px; fill: currentColor; }
 
-        .input-line {
-            display: flex;
-            align-items: center;
-            font-size: 13px;
-            line-height: 1.8;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
+        .input-line { display: flex; align-items: center; font-size: 13px; line-height: 1.8; opacity: 0; transition: opacity 0.3s; }
         .input-line.visible { opacity: 1; }
         .input-line .prompt-text { white-space: pre; }
-        .input-cursor {
-            display: inline-block;
-            width: 8px;
-            height: 14px;
-            background: var(--green);
-            margin-left: 2px;
-            border-radius: 1px;
-            animation: blink 1s step-end infinite;
-        }
-        #user-input {
-            background: transparent;
-            border: none;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 13px;
-            outline: none;
-            caret-color: var(--green);
-            flex: 1;
-            padding: 0;
-            margin: 0;
-            line-height: inherit;
-        }
+        .input-cursor { display: inline-block; width: 8px; height: 14px; background: var(--green); margin-left: 2px; border-radius: 1px; animation: blink 1s step-end infinite; }
+        #user-input { background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 13px; outline: none; caret-color: var(--green); flex: 1; padding: 0; margin: 0; line-height: inherit; }
 
-        /* Q&A Flip Cards */
-        .qa-container {
-            margin: 16px 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-        }
-        .qa-card {
-            perspective: 800px;
-            height: 160px;
-            cursor: pointer;
-        }
-        .qa-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-        }
-        .qa-card.flipped .qa-card-inner {
-            transform: rotateY(180deg);
-        }
-        .qa-card-front, .qa-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            background: #161b22;
-            border: 1px solid var(--border-bright);
-        }
-        .qa-card-front {
-            color: var(--cyan);
-            font-weight: 600;
-        }
-        .qa-card-back {
-            background: #0d1117;
-            color: var(--text-dim);
-            transform: rotateY(180deg);
-            text-align: left;
-            line-height: 1.5;
-        }
+        .qa-container { margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+        .qa-card { perspective: 800px; height: 160px; cursor: pointer; }
+        .qa-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+        .qa-card.flipped .qa-card-inner { transform: rotateY(180deg); }
+        .qa-card-front, .qa-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; font-size: 12px; background: #161b22; border: 1px solid var(--border-bright); }
+        .qa-card-front { color: var(--cyan); font-weight: 600; }
+        .qa-card-back { background: #0d1117; color: var(--text-dim); transform: rotateY(180deg); text-align: left; line-height: 1.5; }
 
         @media (max-width: 600px) {
             body { padding: 0; }
@@ -278,24 +203,23 @@
     </style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
+    <canvas id="matrix"></canvas>
 
-<div class="terminal">
-    <div class="terminal-bar">
-        <div class="dot-row">
-            <div class="dot red"></div>
-            <div class="dot amber"></div>
-            <div class="dot green"></div>
+    <div class="terminal">
+        <div class="terminal-bar">
+            <div class="dot-row">
+                <div class="dot red"></div>
+                <div class="dot amber"></div>
+                <div class="dot green"></div>
+            </div>
+            <div class="terminal-title">saddem@fachinformatiker — interactiv.sh</div>
         </div>
-        <div class="terminal-title">saddem@fachinformatiker — interactiv.sh</div>
+        <div class="terminal-body" id="output">
+            <!-- dynamischer Inhalt + Input -->
+        </div>
     </div>
 
-    <div class="terminal-body" id="output">
-        <!-- dynamischer Inhalt + Input -->
-    </div>
-</div>
-
-<script>
+    <script>
     (function() {
         // ---------- Matrix-Hintergrund mit Farbwechsel ----------
         const canvas = document.getElementById('matrix');
@@ -310,8 +234,7 @@
         let columns = canvas.width / fontSize;
         let drops = [];
 
-        // Regen-Farbthemen
-        const matrixColors = ['#3fb950', '#bc8cff', '#d29922', '#58a6ff', '#f85149']; // grün, lila, amber, cyan, rot
+        const matrixColors = ['#3fb950', '#bc8cff', '#d29922', '#58a6ff', '#f85149'];
         let currentColorIndex = 0;
         let currentMatrixColor = matrixColors[currentColorIndex];
 
@@ -324,7 +247,6 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = currentMatrixColor;
             ctx.font = fontSize + 'px monospace';
-
             for (let i = 0; i < drops.length; i++) {
                 const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -338,11 +260,9 @@
         setInterval(drawMatrix, 45);
 
         // Klick auf Canvas → Farbe wechseln
-        canvas.addEventListener('click', (e) => {
-            e.stopPropagation();
+        canvas.addEventListener('click', () => {
             currentColorIndex = (currentColorIndex + 1) % matrixColors.length;
             currentMatrixColor = matrixColors[currentColorIndex];
-            // Kurzes visuelles Feedback: einmaliges Aufblitzen
             canvas.style.opacity = '0.35';
             setTimeout(() => { canvas.style.opacity = '0.15'; }, 200);
         });
@@ -352,12 +272,10 @@
             canvas.height = window.innerHeight;
             columns = canvas.width / fontSize;
             drops = [];
-            for (let i = 0; i < columns; i++) {
-                drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
-            }
+            for (let i = 0; i < columns; i++) drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
         });
 
-        // ---------- Übersetzungen / Language Toggle ----------
+        // ---------- Übersetzungen ----------
         const LANG_KEY = 'saddem_lang';
         const urlParams = new URLSearchParams(window.location.search);
         let currentLang = urlParams.get('lang') || sessionStorage.getItem(LANG_KEY) || 'de';
@@ -499,17 +417,13 @@
         };
 
         function t(key) {
-            const lang = currentLang;
-            if (translations[lang] && translations[lang][key]) {
-                return translations[lang][key];
-            }
-            return translations['de'][key] || key;
+            return (translations[currentLang] && translations[currentLang][key]) || translations['de'][key] || key;
         }
 
         // ---------- Terminal-Logik ----------
         const output = document.getElementById('output');
         let bootFinished = false;
-        let commandHistory = [];
+        const commandHistory = [];
         let historyIndex = -1;
 
         function calcAge() {
@@ -520,13 +434,7 @@
             if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
             return age;
         }
-
-        function calcDaysAlive() {
-            const birth = new Date(1996, 9, 25);
-            const now = new Date();
-            return Math.floor((now - birth) / 86400000).toLocaleString('de-DE');
-        }
-
+        function calcDaysAlive() { return Math.floor((new Date() - new Date(1996, 9, 25)) / 86400000).toLocaleString('de-DE'); }
         function calcDaysToBirthday() {
             const now = new Date();
             let next = new Date(now.getFullYear(), 9, 25);
@@ -534,40 +442,34 @@
             return Math.ceil((next - now) / 86400000);
         }
 
-        function addLine(text, cls = 'output', extraDelay = 0) {
+        async function addLine(text, cls='output', extraDelay=0) {
             return new Promise(resolve => {
                 setTimeout(() => {
                     const div = document.createElement('div');
                     div.className = 'line ' + cls;
                     div.innerHTML = text;
                     output.appendChild(div);
-                    requestAnimationFrame(() => {
-                        div.classList.add('visible');
-                    });
+                    requestAnimationFrame(() => div.classList.add('visible'));
                     output.scrollTop = output.scrollHeight;
                     resolve(div);
                 }, extraDelay);
             });
         }
-
         const delay = ms => new Promise(r => setTimeout(r, ms));
 
-        async function typeCommand(cmd, totalMs = 600) {
+        async function typeCommand(cmd, totalMs=600) {
             const div = document.createElement('div');
             div.className = 'line cmd visible';
-            div.innerHTML = `<span class="prompt">saddem</span><span class="at">@</span><span class="host">fachinformatiker</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> `;
+            div.innerHTML = '<span class="prompt">saddem</span><span class="at">@</span><span class="host">fachinformatiker</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> ';
             output.appendChild(div);
             const span = document.createElement('span');
             div.appendChild(span);
             const perChar = totalMs / cmd.length;
-            for (let c of cmd) {
-                span.textContent += c;
-                await delay(perChar);
-            }
+            for (const c of cmd) { span.textContent += c; await delay(perChar); }
             output.scrollTop = output.scrollHeight;
         }
 
-        function showElement(el, displayType = 'block') {
+        function showElement(el, displayType='block') {
             el.style.display = displayType;
             requestAnimationFrame(() => {
                 el.style.opacity = '0';
@@ -592,7 +494,7 @@
         function createInteractivePrompt() {
             const inputLine = document.createElement('div');
             inputLine.className = 'input-line';
-            inputLine.innerHTML = `<span class="prompt-text"><span class="prompt">saddem</span><span class="at">@</span><span class="host">fachinformatiker</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> </span>`;
+            inputLine.innerHTML = '<span class="prompt-text"><span class="prompt">saddem</span><span class="at">@</span><span class="host">fachinformatiker</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> </span>';
             const input = document.createElement('input');
             input.type = 'text';
             input.id = 'user-input';
@@ -609,103 +511,87 @@
             input.addEventListener('keydown', async (e) => {
                 if (e.key === 'Enter') {
                     const cmd = input.value.trim();
-                    if (cmd === '') return;
+                    if (!cmd) return;
                     commandHistory.push(cmd);
                     historyIndex = commandHistory.length;
                     inputLine.remove();
-                    const executedLine = document.createElement('div');
-                    executedLine.className = 'line cmd visible';
-                    executedLine.innerHTML = `<span class="prompt">saddem</span><span class="at">@</span><span class="host">fachinformatiker</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> ${cmd}`;
-                    output.appendChild(executedLine);
+                    const executed = document.createElement('div');
+                    executed.className = 'line cmd visible';
+                    executed.innerHTML = '<span class="prompt">saddem</span><span class="at">@</span><span class="host">fachinformatiker</span> <span style="color:var(--text-dim)">~</span> <span style="color:var(--text-muted)">%</span> ' + cmd;
+                    output.appendChild(executed);
                     await processCommand(cmd);
                     output.scrollTop = output.scrollHeight;
                     createInteractivePrompt();
                 } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    if (commandHistory.length > 0) {
-                        historyIndex = Math.max(0, historyIndex - 1);
+                    if (commandHistory.length) {
+                        historyIndex = Math.max(0, historyIndex-1);
                         input.value = commandHistory[historyIndex] || '';
                     }
                 } else if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    if (commandHistory.length > 0) {
-                        historyIndex = Math.min(commandHistory.length - 1, historyIndex + 1);
+                    if (commandHistory.length) {
+                        historyIndex = Math.min(commandHistory.length-1, historyIndex+1);
                         input.value = commandHistory[historyIndex] || '';
-                    } else {
-                        input.value = '';
-                    }
+                    } else input.value = '';
                 }
             });
 
-            input.addEventListener('blur', () => {
-                setTimeout(() => input.focus(), 10);
-            });
-
+            input.addEventListener('blur', () => setTimeout(() => input.focus(), 10));
             return inputLine;
         }
 
         async function processCommand(cmd) {
             const lower = cmd.toLowerCase();
-            if (lower === 'lang de' || lower === 'lang de') {
+            if (lower === 'lang de') {
                 sessionStorage.setItem(LANG_KEY, 'de');
                 location.href = location.pathname + '?lang=de';
                 return;
             }
-            if (lower === 'lang en' || lower === 'lang en') {
+            if (lower === 'lang en') {
                 sessionStorage.setItem(LANG_KEY, 'en');
                 location.href = location.pathname + '?lang=en';
                 return;
             }
-
             switch(lower) {
-                case 'hilfe':
-                case 'help':
+                case 'hilfe': case 'help':
                     await addLine(t('helpCmd'), 'bright');
-                    for (const h of t('helpList')) {
-                        await addLine(`  ${h}`, 'output');
-                    }
+                    for (const h of t('helpList')) await addLine('  ' + h, 'output');
                     break;
                 case 'skills':
                     await addLine('Technische Skills:', 'bright');
                     await addLine(t('skills').join(', '), 'output');
                     break;
-                case 'erfahrung':
-                case 'experience':
-                    await addLine(currentLang === 'de' ? 'Karriere-Timeline:' : 'Career Timeline:', 'bright');
-                    for (const item of t('journey')) {
-                        await addLine(`  • ${item.year}: ${item.role} – ${item.org}`, 'output');
-                    }
+                case 'erfahrung': case 'experience':
+                    await addLine(currentLang==='de'?'Karriere-Timeline:':'Career Timeline:', 'bright');
+                    for (const item of t('journey')) await addLine(`  • ${item.year}: ${item.role} – ${item.org}`, 'output');
                     break;
-                case 'kontakt':
-                case 'contact':
-                    await addLine(currentLang === 'de' ? 'Kontakt & Profile:' : 'Contact & Profiles:', 'bright');
+                case 'kontakt': case 'contact':
+                    await addLine(currentLang==='de'?'Kontakt & Profile:':'Contact & Profiles:', 'bright');
                     await addLine('  GitHub:  https://github.com/SaddemYousfi', 'info');
                     await addLine('  LinkedIn: https://linkedin.com/in/saddemyousfi', 'info');
                     await addLine('  E-Mail:  saddemyoussfi@gmail.com', 'info');
                     break;
                 case 'whoami':
                     await addLine('Saddem Yousfi', 'bright');
-                    await addLine(currentLang === 'de' ? 'Geboren am 25.10.1996 in Sousse, Tunesien' : 'Born 25.10.1996 in Sousse, Tunisia', 'output');
-                    await addLine(currentLang === 'de' ? 'Wohnhaft in Tunis, Tunesien' : 'Living in Tunis, Tunisia', 'output');
-                    await addLine(currentLang === 'de' ? 'Ziel: Fachinformatiker Ausbildung (Anwendungsentwicklung/Systemintegration) in Deutschland' : 'Target: Fachinformatiker apprenticeship (application development / system integration) in Germany', 'warn');
-                    await addLine(`${currentLang === 'de' ? 'Aktuelles Alter:' : 'Current age:'} ${calcAge()} ${currentLang === 'de' ? 'Jahre' : 'years'}`, 'output');
+                    await addLine(currentLang==='de'?'Geboren am 25.10.1996 in Sousse, Tunesien':'Born 25.10.1996 in Sousse, Tunisia', 'output');
+                    await addLine(currentLang==='de'?'Wohnhaft in Tunis, Tunesien':'Living in Tunis, Tunisia', 'output');
+                    await addLine(currentLang==='de'?'Ziel: Fachinformatiker Ausbildung (Anwendungsentwicklung/Systemintegration) in Deutschland':'Target: Fachinformatiker apprenticeship in Germany', 'warn');
+                    await addLine((currentLang==='de'?'Aktuelles Alter: ':'Current age: ') + calcAge() + (currentLang==='de'?' Jahre':' years'), 'output');
                     break;
-                case 'alter':
-                case 'age':
-                    await addLine(`${currentLang === 'de' ? 'Aktuelles Alter:' : 'Current age:'} ${calcAge()} ${currentLang === 'de' ? 'Jahre' : 'years'}`, 'bright');
+                case 'alter': case 'age':
+                    await addLine((currentLang==='de'?'Aktuelles Alter: ':'Current age: ') + calcAge() + (currentLang==='de'?' Jahre':' years'), 'bright');
                     await addLine(`${calcDaysAlive()} ${t('ageDays')} · ${t('ageUntil')} ${calcDaysToBirthday()} ${t('ageUntilSuffix')}`, 'output');
                     break;
-                case 'projekte':
-                case 'projects':
-                    await addLine(currentLang === 'de' ? 'GitHub Repositories (Platzhalter):' : 'GitHub Repositories (placeholder):', 'bright');
+                case 'projekte': case 'projects':
+                    await addLine(currentLang==='de'?'GitHub Repositories (Platzhalter):':'GitHub Repositories (placeholder):', 'bright');
                     await addLine('  https://github.com/SaddemYousfi?tab=repositories', 'info');
                     break;
                 case 'hobbies':
                     await addLine(t('hobbiesTitle'), 'bright');
                     await addLine(t('hobbiesList'), 'output');
                     break;
-                case 'fragen':
-                case 'qa':
+                case 'fragen': case 'qa':
                     await showQA();
                     break;
                 case 'clear':
@@ -720,30 +606,25 @@
         }
 
         async function showQA() {
-            // Q&A container erstellen
             const qaDiv = document.createElement('div');
             qaDiv.className = 'qa-container';
-            const questions = t('qaQuestions');
-            questions.forEach(item => {
+            t('qaQuestions').forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'qa-card';
-                card.innerHTML = `
-                    <div class="qa-card-inner">
-                        <div class="qa-card-front">${item.q}</div>
-                        <div class="qa-card-back">${item.a}</div>
-                    </div>`;
-                card.addEventListener('click', () => {
-                    card.classList.toggle('flipped');
-                });
+                card.innerHTML = `<div class="qa-card-inner">
+                    <div class="qa-card-front">${item.q}</div>
+                    <div class="qa-card-back">${item.a}</div>
+                </div>`;
+                card.addEventListener('click', () => card.classList.toggle('flipped'));
                 qaDiv.appendChild(card);
             });
             output.appendChild(qaDiv);
             await addLine(' ', 'output');
-            await addLine(currentLang === 'de' ? 'Klicke auf eine Karte, um die Antwort zu sehen.' : 'Click a card to reveal the answer.', 'info');
+            await addLine(currentLang==='de' ? 'Klicke auf eine Karte, um die Antwort zu sehen.' : 'Click a card to reveal the answer.', 'info');
             output.scrollTop = output.scrollHeight;
         }
 
-        // ---------- Boot-Sequenz (sprachabhängig) ----------
+        // ---------- Boot-Sequenz ----------
         async function bootSequence() {
             await delay(400);
             await addLine(t('bootLine1'), 'output');
@@ -777,12 +658,9 @@
 
             const ageCard = document.createElement('div');
             ageCard.className = 'age-card';
-            ageCard.innerHTML = `
-                <div class="age-big">${calcAge()}</div>
+            ageCard.innerHTML = `<div class="age-big">${calcAge()}</div>
                 <div class="age-label">${t('ageYears')}  ·  ${t('ageBorn')}</div>
-                <div class="age-sub">
-                    ${calcDaysAlive()} ${t('ageDays')}  ·  ${t('ageUntil')} ${calcDaysToBirthday()} ${t('ageUntilSuffix')}
-                </div>`;
+                <div class="age-sub">${calcDaysAlive()} ${t('ageDays')}  ·  ${t('ageUntil')} ${calcDaysToBirthday()} ${t('ageUntilSuffix')}</div>`;
             output.appendChild(ageCard);
             showElement(ageCard, 'block');
             await delay(600);
@@ -795,8 +673,7 @@
 
             const skillsGrid = document.createElement('div');
             skillsGrid.className = 'skills-grid';
-            const skills = t('skills');
-            skills.forEach(s => {
+            t('skills').forEach(s => {
                 const b = document.createElement('div');
                 b.className = 'skill-badge';
                 b.textContent = s;
@@ -809,7 +686,7 @@
             for (let i = 0; i < badges.length; i++) {
                 await delay(80);
                 badges[i].classList.add('loaded');
-                await addLine(`  [✓] ${skills[i]} ${t('skillLoaded')}`, 'success');
+                await addLine(`  [✓] ${t('skills')[i]} ${t('skillLoaded')}`, 'success');
             }
 
             await addLine('', 'output');
@@ -827,20 +704,18 @@
 
             const tlSection = document.createElement('div');
             tlSection.className = 'timeline-section';
-            const journey = t('journey');
-            journey.forEach((item, i) => {
+            t('journey').forEach((item, i, arr) => {
                 const el = document.createElement('div');
                 el.className = 'tl-item';
-                el.innerHTML = `
-                    <div class="tl-dot-wrap">
-                        <div class="tl-dot"></div>
-                        ${i < journey.length - 1 ? '<div class="tl-line"></div>' : ''}
-                    </div>
-                    <div class="tl-content">
-                        <div class="tl-year">${item.year}</div>
-                        <div class="tl-role">${item.role}</div>
-                        <div class="tl-org">${item.org}</div>
-                    </div>`;
+                el.innerHTML = `<div class="tl-dot-wrap">
+                    <div class="tl-dot"></div>
+                    ${i < arr.length-1 ? '<div class="tl-line"></div>' : ''}
+                </div>
+                <div class="tl-content">
+                    <div class="tl-year">${item.year}</div>
+                    <div class="tl-role">${item.role}</div>
+                    <div class="tl-org">${item.org}</div>
+                </div>`;
                 tlSection.appendChild(el);
             });
             output.appendChild(tlSection);
@@ -866,19 +741,17 @@
 
             const progSection = document.createElement('div');
             progSection.className = 'progress-section';
-            progSection.innerHTML = `
-                <div class="progress-label">${t('progressLabelDe')}</div>
+            progSection.innerHTML = `<div class="progress-label">${t('progressLabelDe')}</div>
                 <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb1"></div></div>
                 <br>
                 <div class="progress-label">${t('progressLabelQA')}</div>
                 <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb2"></div></div>`;
             output.appendChild(progSection);
             showElement(progSection, 'block');
-
             await animateProgress(document.getElementById('pb1'), 80, 800);
-            await addLine(`  ${t('progressDeResult')}`, 'output');
+            await addLine('  ' + t('progressDeResult'), 'output');
             await animateProgress(document.getElementById('pb2'), 75, 700);
-            await addLine(`  ${t('progressQAResult')}`, 'output');
+            await addLine('  ' + t('progressQAResult'), 'output');
 
             await delay(600);
             await addLine('', 'output');
@@ -887,17 +760,14 @@
 
             const cta = document.createElement('div');
             cta.className = 'cta-section';
-            cta.innerHTML = `
-                <div class="cta-title">${t('ctaTitle')}</div>
-                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
-                    ${t('ctaText')}
-                </div>
+            cta.innerHTML = `<div class="cta-title">${t('ctaTitle')}</div>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">${t('ctaText')}</div>
                 <div class="cta-links">
                     <a class="cta-link" href="https://github.com/SaddemYousfi" target="_blank" rel="noopener">
                         <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                         GitHub
                     </a>
-                    <a class="cta-link" href="mailto:saddemyoussfi@gmail.com" target="_blank">
+                    <a class="cta-link" href="mailto:saddemyoussfi@gmail.com">
                         <svg viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/></svg>
                         E-Mail
                     </a>
@@ -919,9 +789,8 @@
             output.scrollTop = output.scrollHeight;
         }
 
-        // Boot starten
         bootSequence();
     })();
-</script>
+    </script>
 </body>
 </html>
