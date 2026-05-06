@@ -3,39 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saddem Yousfi - IT Career Tracker</title>
+    <title>Saddem Yousfi | IT Journey Tracker</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f9; color: #333; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
-        h1 { color: #2c3e50; font-size: 1.5rem; }
-        .timer { font-size: 1.2rem; font-weight: bold; color: #3498db; margin: 1rem 0; }
-        .milestone { background: #e8f4fd; padding: 10px; border-radius: 8px; font-size: 0.9rem; margin-top: 1rem; }
+        :root {
+            --primary: #64ffda;
+            --bg: #0a192f;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: radial-gradient(circle at center, #112240 0%, #0a192f 100%);
+            color: #ccd6f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        .timer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 2rem 0;
+        }
+        .timer-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 5px;
+            border-radius: 12px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+        .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(100, 255, 218, 0.1);
+            color: var(--primary);
+            font-size: 0.8rem;
+            margin-top: 1.5rem;
+            border: 1px solid var(--primary);
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>IT-Karriere Fortschritt</h1>
-        <p>Zeit seit Beginn der QA-Spezialisierung:</p>
-        <div id="timer" class="timer">Wird berechnet...</div>
-        <div class="milestone">
-            <strong>Status:</strong> B2 Deutsch & ISTQB zertifiziert <br>
-            <strong>Ziel:</strong> Fachinformatiker Ausbildung 2026
+    <div class="container">
+        <h1>IT Career Milestone</h1>
+        <div class="subtitle">> system.init("Saddem Yousfi")</div>
+        
+        <p style="opacity: 0.8;">Zeit seit Beginn meiner Spezialisierung:</p>
+        
+        <div class="timer-grid">
+            <div class="timer-box">
+                <span id="days" class="number">00</span>
+                <span class="label">Tage</span>
+            </div>
+            <div class="timer-box">
+                <span id="hours" class="number">00</span>
+                <span class="label">Std</span>
+            </div>
+            <div class="timer-box">
+                <span id="mins" class="number">00</span>
+                <span class="label">Min</span>
+            </div>
+            <div class="timer-box">
+                <span id="secs" class="number">00</span>
+                <span class="label">Sek</span>
+            </div>
         </div>
+
+        <div class="badge">Status: Ready for Ausbildung 2026</div>
     </div>
 
     <script>
         function updateTimer() {
-            const start = new Date('2025-11-01T00:00:00'); // Dein Kursstart
+            const start = new Date('2025-11-01T00:00:00'); // Your training start[cite: 1]
             const now = new Date();
             const diff = now - start;
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const mins = Math.floor((diff / 1000 / 60) % 60);
-            const secs = Math.floor((diff / 1000) % 60);
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / 1000 / 60) % 60);
+            const s = Math.floor((diff / 1000) % 60);
 
-            document.getElementById('timer').innerHTML = 
-                `${days} Tage, ${hours} Std, ${mins} Min, ${secs} Sek`;
+            document.getElementById('days').innerText = d.toString().padStart(2, '0');
+            document.getElementById('hours').innerText = h.toString().padStart(2, '0');
+            document.getElementById('mins').innerText = m.toString().padStart(2, '0');
+            document.getElementById('secs').innerText = s.toString().padStart(2, '0');
         }
         setInterval(updateTimer, 1000);
         updateTimer();
