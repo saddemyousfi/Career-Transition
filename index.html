@@ -48,27 +48,22 @@
             height: 100%;
             z-index: -1;
             opacity: 0.15;
-            pointer-events: none;
+            pointer-events: auto; /* Allow clicks for color cycling */
+            cursor: crosshair;
         }
 
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0,0,0,0.03) 2px,
-                    rgba(0,0,0,0.03) 4px
-            );
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
             pointer-events: none;
             z-index: 1000;
         }
 
         .terminal {
             width: 100%;
-            max-width: 780px;
+            max-width: 800px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -223,12 +218,62 @@
             line-height: inherit;
         }
 
+        /* Q&A Flip Cards */
+        .qa-container {
+            margin: 16px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .qa-card {
+            perspective: 800px;
+            height: 160px;
+            cursor: pointer;
+        }
+        .qa-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .qa-card.flipped .qa-card-inner {
+            transform: rotateY(180deg);
+        }
+        .qa-card-front, .qa-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: #161b22;
+            border: 1px solid var(--border-bright);
+        }
+        .qa-card-front {
+            color: var(--cyan);
+            font-weight: 600;
+        }
+        .qa-card-back {
+            background: #0d1117;
+            color: var(--text-dim);
+            transform: rotateY(180deg);
+            text-align: left;
+            line-height: 1.5;
+        }
+
         @media (max-width: 600px) {
             body { padding: 0; }
             .terminal { border-radius: 0; border-left: none; border-right: none; }
             .terminal-body { padding: 16px; }
             .age-big { font-size: 36px; }
             .skills-grid { grid-template-columns: repeat(2, 1fr); }
+            .qa-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -252,7 +297,7 @@
 
 <script>
     (function() {
-        // ---------- Matrix-Hintergrund ----------
+        // ---------- Matrix-Hintergrund mit Farbwechsel ----------
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -265,6 +310,11 @@
         let columns = canvas.width / fontSize;
         let drops = [];
 
+        // Regen-Farbthemen
+        const matrixColors = ['#3fb950', '#bc8cff', '#d29922', '#58a6ff', '#f85149']; // grün, lila, amber, cyan, rot
+        let currentColorIndex = 0;
+        let currentMatrixColor = matrixColors[currentColorIndex];
+
         for (let i = 0; i < columns; i++) {
             drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
         }
@@ -272,7 +322,7 @@
         function drawMatrix() {
             ctx.fillStyle = 'rgba(8, 12, 16, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#3fb950';
+            ctx.fillStyle = currentMatrixColor;
             ctx.font = fontSize + 'px monospace';
 
             for (let i = 0; i < drops.length; i++) {
@@ -286,6 +336,17 @@
         }
 
         setInterval(drawMatrix, 45);
+
+        // Klick auf Canvas → Farbe wechseln
+        canvas.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentColorIndex = (currentColorIndex + 1) % matrixColors.length;
+            currentMatrixColor = matrixColors[currentColorIndex];
+            // Kurzes visuelles Feedback: einmaliges Aufblitzen
+            canvas.style.opacity = '0.35';
+            setTimeout(() => { canvas.style.opacity = '0.15'; }, 200);
+        });
+
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -295,6 +356,155 @@
                 drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
             }
         });
+
+        // ---------- Übersetzungen / Language Toggle ----------
+        const LANG_KEY = 'saddem_lang';
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentLang = urlParams.get('lang') || sessionStorage.getItem(LANG_KEY) || 'de';
+        sessionStorage.setItem(LANG_KEY, currentLang);
+
+        const translations = {
+            de: {
+                bootLine1: 'Linux version 6.5.0-saddem-amd64  #1 SMP PREEMPT',
+                bootInit: '[    0.000] Initialisiere Bewerberprofil...',
+                bootLoadBio: '[    0.312] Lade biografische Daten aus /proc/saddem',
+                bootModules: '[    0.891] ✓ Kernelmodule erfolgreich geladen',
+                identTitle: '┌─────────────────────────────────────────┐',
+                identSubTitle: '│         SUBJEKT-IDENTIFIZIERUNG          │',
+                identName: '  NAME    : Saddem Yousfi',
+                identOrigin: '  HERKUNFT: Sousse, Tunesien  →  Tunis, Tunesien',
+                identRole: '  ROLLE   : Software QA Engineer (in Ausbildung)',
+                identTarget: '  ZIEL    : Fachinformatiker Ausbildung 2026 🇩🇪',
+                ageCommand: 'calc_age --dob 1996-10-25 --realtime',
+                ageYears: 'Jahre alt',
+                ageBorn: 'geboren am 25. Oktober 1996',
+                ageDays: 'Tage gelebt',
+                ageUntil: 'noch',
+                ageUntilSuffix: 'Tage bis zum nächsten Geburtstag',
+                scanSkills: './scan_skills --format=grid',
+                scanText: 'Scanne installierte Fähigkeiten...',
+                skills: ['Python', 'JavaScript', 'HTML5/CSS3', 'Playwright', 'Selenium', 'Robot FW', 'Postman', 'Git/GitHub', 'Jenkins CI', 'Jira/Xray', 'Linux', 'Agile/Scrum'],
+                skillLoaded: '— geladen',
+                hobbiesTitle: '📦 Optionale Module: Interessen & Hobbys',
+                hobbiesList: '  🎮 Video Games   🍳 Cooking   💻 Tech   🎬 Cinema   ☕ Coffee',
+                modulesLoaded: '12 / 12 Module geladen  [100%]',
+                gitLog: 'git log --oneline --career',
+                journey: [
+                    { year: '2015–2018', role: 'B.A. Englisch & Literatur', org: 'Universität Tunis' },
+                    { year: '2020', role: 'B2B Kundenberater', org: 'National Pen GmbH' },
+                    { year: '2021', role: 'IT-Korrektor & Übersetzer', org: 'GoMyCode' },
+                    { year: '2021–2023', role: 'Kabinenpersonal', org: 'Etihad Airways, Abu Dhabi' },
+                    { year: '2024–heute', role: 'Freiberufl. Übersetzer & B2 Deutsch', org: 'Upwork · Boosteno' },
+                    { year: '09–10/2025', role: 'IT-Praktikum', org: 'SWS Informatique, Tunis' },
+                    { year: '2025–2026', role: 'QA Training + ISTQB CTFL', org: 'Playwright · Selenium · Jenkins' },
+                    { year: '2026 →', role: 'Fachinformatiker Ausbildung', org: 'Ziel: Deutschland 🇩🇪' }
+                ],
+                timelineSummary: '8 Stationen · Mehrsprachig (AR, DE, EN, FR) · Internationale Erfahrung',
+                progressLabelDe: 'Deutsch-Niveau',
+                progressLabelQA: 'QA / Testing Skills',
+                progressDeResult: 'Deutsch: B2 (TELC zertifiziert)',
+                progressQAResult: 'QA/Testing: ISTQB CTFL ✓',
+                ctaTitle: '// Bereit für den nächsten Schritt ↗',
+                ctaText: 'Ich suche eine <strong>Fachinformatiker Ausbildung (Anwendungsentwicklung oder Systemintegration)</strong> ab 2026 in Deutschland. ISTQB zertifiziert, B2 Deutsch, praktische Erfahrung mit Playwright, Selenium, Jenkins und Agile/Scrum.',
+                profileReady: '[  OK  ] Profil geladen. System bereit.',
+                helpCmd: 'Verfügbare Befehle:',
+                helpList: [
+                    'hilfe        - diese Übersicht',
+                    'skills       - technische Fähigkeiten',
+                    'erfahrung    - beruflicher Werdegang',
+                    'kontakt      - Kontakt & Profile',
+                    'whoami       - persönliche Kurzinfo',
+                    'alter        - aktuelles Alter live berechnet',
+                    'projekte     - GitHub Repositories',
+                    'hobbies      - Interessen & Hobbys',
+                    'fragen       - häufige Bewerbungsfragen (Q&A)',
+                    'lang de/en   - Sprache umschalten',
+                    'clear        - Bildschirm leeren',
+                    'home         - Boot-Sequenz neu laden'
+                ],
+                qaQuestions: [
+                    { q: 'Warum Fachinformatiker?', a: 'Weil ich gerne tüftle, ständig Neues lerne und mich weiterentwickle. In der IT finde ich die perfekte Kombination aus Logik und Kreativität.' },
+                    { q: 'Warum Deutschland?', a: 'Deutschland bietet exzellente Ausbildungsstandards und vielfältige Karrierechancen. Ich möchte meine Sprachkenntnisse und meine IT-Skills hier vereinen.' },
+                    { q: 'Was sind Ihre Stärken?', a: 'Analytisches Denken, strukturierte Arbeitsweise, schnelle Auffassungsgabe und Teamfähigkeit in internationalen Teams.' },
+                    { q: 'Warum sollten wir Sie einstellen?', a: 'Ich bringe praktische IT-Erfahrung im Support und QA mit, ein ISTQB-Zertifikat, B2-Deutsch und eine hohe Lernbereitschaft – ich will wirklich in Deutschland durchstarten.' },
+                    { q: 'Wo sehen Sie sich in 5 Jahren?', a: 'Als ausgebildeter Fachinformatiker möchte ich in einem agilen Team Verantwortung für Testautomatisierung übernehmen und mich fachlich weiter spezialisieren.' }
+                ]
+            },
+            en: {
+                bootLine1: 'Linux version 6.5.0-saddem-amd64  #1 SMP PREEMPT',
+                bootInit: '[    0.000] Initializing subject profile...',
+                bootLoadBio: '[    0.312] Loading biographical data from /proc/saddem',
+                bootModules: '[    0.891] ✓ Kernel modules loaded successfully',
+                identTitle: '┌─────────────────────────────────────────┐',
+                identSubTitle: '│         SUBJECT IDENTIFICATION          │',
+                identName: '  NAME    : Saddem Yousfi',
+                identOrigin: '  ORIGIN  : Sousse, Tunisia  →  Tunis, Tunisia',
+                identRole: '  ROLE    : Software QA Engineer (in training)',
+                identTarget: '  TARGET  : Fachinformatiker apprenticeship 2026 🇩🇪',
+                ageCommand: 'calc_age --dob 1996-10-25 --realtime',
+                ageYears: 'years old',
+                ageBorn: 'born on 25 October 1996',
+                ageDays: 'days lived',
+                ageUntil: 'still',
+                ageUntilSuffix: 'days until next birthday',
+                scanSkills: './scan_skills --format=grid',
+                scanText: 'Scanning installed capabilities...',
+                skills: ['Python', 'JavaScript', 'HTML5/CSS3', 'Playwright', 'Selenium', 'Robot FW', 'Postman', 'Git/GitHub', 'Jenkins CI', 'Jira/Xray', 'Linux', 'Agile/Scrum'],
+                skillLoaded: '— loaded',
+                hobbiesTitle: '📦 Optional Modules: Interests & Hobbies',
+                hobbiesList: '  🎮 Video Games   🍳 Cooking   💻 Tech   🎬 Cinema   ☕ Coffee',
+                modulesLoaded: '12 / 12 modules loaded  [100%]',
+                gitLog: 'git log --oneline --career',
+                journey: [
+                    { year: '2015–2018', role: 'B.A. English & Literature', org: 'University of Tunis' },
+                    { year: '2020', role: 'B2B Customer Advisor', org: 'National Pen GmbH' },
+                    { year: '2021', role: 'IT Proofreader & Translator', org: 'GoMyCode' },
+                    { year: '2021–2023', role: 'Cabin Crew', org: 'Etihad Airways, Abu Dhabi' },
+                    { year: '2024–present', role: 'Freelance Translator & B2 German', org: 'Upwork · Boosteno' },
+                    { year: '09–10/2025', role: 'IT Internship', org: 'SWS Informatique, Tunis' },
+                    { year: '2025–2026', role: 'QA Training + ISTQB CTFL', org: 'Playwright · Selenium · Jenkins' },
+                    { year: '2026 →', role: 'Fachinformatiker Apprenticeship', org: 'Target: Germany 🇩🇪' }
+                ],
+                timelineSummary: '8 stages · Multilingual (AR, DE, EN, FR) · International experience',
+                progressLabelDe: 'German level',
+                progressLabelQA: 'QA / Testing Skills',
+                progressDeResult: 'German: B2 (TELC certified)',
+                progressQAResult: 'QA/Testing: ISTQB CTFL ✓',
+                ctaTitle: '// Ready for the next step ↗',
+                ctaText: 'I am looking for a <strong>Fachinformatiker apprenticeship (application development or system integration)</strong> starting in 2026 in Germany. ISTQB certified, B2 German, practical experience with Playwright, Selenium, Jenkins and Agile/Scrum.',
+                profileReady: '[  OK  ] Profile loaded. System ready.',
+                helpCmd: 'Available commands:',
+                helpList: [
+                    'help         - this overview',
+                    'skills       - technical skills',
+                    'experience   - career timeline',
+                    'contact      - contact & profiles',
+                    'whoami       - personal summary',
+                    'age          - live age calculation',
+                    'projects     - GitHub repositories',
+                    'hobbies      - interests & hobbies',
+                    'qa           - common interview questions',
+                    'lang de/en   - switch language',
+                    'clear        - clear screen',
+                    'home         - reload boot sequence'
+                ],
+                qaQuestions: [
+                    { q: 'Why IT specialist?', a: 'Because I love tinkering, continuously learning new things, and evolving. In IT I find the perfect combination of logic and creativity.' },
+                    { q: 'Why Germany?', a: 'Germany offers excellent training standards and diverse career opportunities. I want to combine my language skills with my IT expertise here.' },
+                    { q: 'What are your strengths?', a: 'Analytical thinking, structured work approach, quick comprehension, and teamwork in international settings.' },
+                    { q: 'Why should we hire you?', a: 'I bring practical IT support and QA experience, an ISTQB certificate, B2 German, and a strong willingness to learn – I really want to launch my career in Germany.' },
+                    { q: 'Where do you see yourself in 5 years?', a: 'As a qualified IT specialist, I want to take responsibility for test automation in an agile team and continue specializing.' }
+                ]
+            }
+        };
+
+        function t(key) {
+            const lang = currentLang;
+            if (translations[lang] && translations[lang][key]) {
+                return translations[lang][key];
+            }
+            return translations['de'][key] || key;
+        }
 
         // ---------- Terminal-Logik ----------
         const output = document.getElementById('output');
@@ -436,65 +646,67 @@
 
         async function processCommand(cmd) {
             const lower = cmd.toLowerCase();
+            if (lower === 'lang de' || lower === 'lang de') {
+                sessionStorage.setItem(LANG_KEY, 'de');
+                location.href = location.pathname + '?lang=de';
+                return;
+            }
+            if (lower === 'lang en' || lower === 'lang en') {
+                sessionStorage.setItem(LANG_KEY, 'en');
+                location.href = location.pathname + '?lang=en';
+                return;
+            }
+
             switch(lower) {
                 case 'hilfe':
                 case 'help':
-                    await addLine('Verfügbare Befehle:', 'bright');
-                    await addLine('  hilfe        - diese Übersicht', 'output');
-                    await addLine('  skills       - technische Fähigkeiten', 'output');
-                    await addLine('  erfahrung    - beruflicher Werdegang', 'output');
-                    await addLine('  kontact      - Kontakt & Profile', 'output');
-                    await addLine('  whoami       - persönliche Kurzinfo', 'output');
-                    await addLine('  alter        - aktuelles Alter live berechnet', 'output');
-                    await addLine('  projekte     - GitHub Repositories', 'output');
-                    await addLine('  hobbies      - Interessen & Hobbys', 'output');
-                    await addLine('  clear        - Bildschirm leeren', 'output');
-                    await addLine('  home         - Boot-Sequenz neu laden', 'output');
+                    await addLine(t('helpCmd'), 'bright');
+                    for (const h of t('helpList')) {
+                        await addLine(`  ${h}`, 'output');
+                    }
                     break;
                 case 'skills':
                     await addLine('Technische Skills:', 'bright');
-                    await addLine('Python, JavaScript, HTML5/CSS3, Playwright, Selenium, Robot Framework, Postman, Git/GitHub, Jenkins CI, Jira/Xray, Linux, Agile/Scrum', 'output');
+                    await addLine(t('skills').join(', '), 'output');
                     break;
                 case 'erfahrung':
-                    await addLine('Karriere-Timeline:', 'bright');
-                    const timeline = [
-                        '2015–2018: B.A. Englisch & Literatur – Universität Tunis',
-                        '2020: B2B Kundenberater – National Pen GmbH',
-                        '2021: IT-Korrektor & Übersetzer – GoMyCode',
-                        '2021–2023: Kabinenpersonal – Etihad Airways, Abu Dhabi',
-                        '2024–heute: Freiberuflicher Übersetzer & Deutsch B2',
-                        '09–10/2025: IT-Praktikum – SWS Informatique, Tunis',
-                        '2025–2026: QA Training & ISTQB CTFL',
-                        '2026 → Ziel: Fachinformatiker Ausbildung, Deutschland 🇩🇪'
-                    ];
-                    for (const t of timeline) {
-                        await addLine(`  • ${t}`, 'output');
+                case 'experience':
+                    await addLine(currentLang === 'de' ? 'Karriere-Timeline:' : 'Career Timeline:', 'bright');
+                    for (const item of t('journey')) {
+                        await addLine(`  • ${item.year}: ${item.role} – ${item.org}`, 'output');
                     }
                     break;
                 case 'kontakt':
-                    await addLine('Kontakt & Profile:', 'bright');
+                case 'contact':
+                    await addLine(currentLang === 'de' ? 'Kontakt & Profile:' : 'Contact & Profiles:', 'bright');
                     await addLine('  GitHub:  https://github.com/SaddemYousfi', 'info');
                     await addLine('  LinkedIn: https://linkedin.com/in/saddemyousfi', 'info');
                     await addLine('  E-Mail:  saddemyoussfi@gmail.com', 'info');
                     break;
                 case 'whoami':
                     await addLine('Saddem Yousfi', 'bright');
-                    await addLine('Geboren am 25.10.1996 in Sousse, Tunesien', 'output');
-                    await addLine('Wohnhaft in Tunis, Tunesien', 'output');
-                    await addLine('Ziel: Fachinformatiker Ausbildung (Anwendungsentwicklung/Systemintegration) in Deutschland', 'warn');
-                    await addLine(`Aktuelles Alter: ${calcAge()} Jahre`, 'output');
+                    await addLine(currentLang === 'de' ? 'Geboren am 25.10.1996 in Sousse, Tunesien' : 'Born 25.10.1996 in Sousse, Tunisia', 'output');
+                    await addLine(currentLang === 'de' ? 'Wohnhaft in Tunis, Tunesien' : 'Living in Tunis, Tunisia', 'output');
+                    await addLine(currentLang === 'de' ? 'Ziel: Fachinformatiker Ausbildung (Anwendungsentwicklung/Systemintegration) in Deutschland' : 'Target: Fachinformatiker apprenticeship (application development / system integration) in Germany', 'warn');
+                    await addLine(`${currentLang === 'de' ? 'Aktuelles Alter:' : 'Current age:'} ${calcAge()} ${currentLang === 'de' ? 'Jahre' : 'years'}`, 'output');
                     break;
                 case 'alter':
-                    await addLine(`Aktuelles Alter: ${calcAge()} Jahre`, 'bright');
-                    await addLine(`${calcDaysAlive()} Tage gelebt · noch ${calcDaysToBirthday()} Tage bis zum Geburtstag`, 'output');
+                case 'age':
+                    await addLine(`${currentLang === 'de' ? 'Aktuelles Alter:' : 'Current age:'} ${calcAge()} ${currentLang === 'de' ? 'Jahre' : 'years'}`, 'bright');
+                    await addLine(`${calcDaysAlive()} ${t('ageDays')} · ${t('ageUntil')} ${calcDaysToBirthday()} ${t('ageUntilSuffix')}`, 'output');
                     break;
                 case 'projekte':
-                    await addLine('GitHub Repositories (Platzhalter):', 'bright');
+                case 'projects':
+                    await addLine(currentLang === 'de' ? 'GitHub Repositories (Platzhalter):' : 'GitHub Repositories (placeholder):', 'bright');
                     await addLine('  https://github.com/SaddemYousfi?tab=repositories', 'info');
                     break;
                 case 'hobbies':
-                    await addLine('Interessen & Hobbys:', 'bright');
-                    await addLine('  🎮 Video Games   🍳 Cooking   💻 Tech   🎬 Cinema   ☕ Coffee', 'output');
+                    await addLine(t('hobbiesTitle'), 'bright');
+                    await addLine(t('hobbiesList'), 'output');
+                    break;
+                case 'fragen':
+                case 'qa':
+                    await showQA();
                     break;
                 case 'clear':
                     output.innerHTML = '';
@@ -507,59 +719,83 @@
             }
         }
 
-        // ---------- Boot-Sequenz ----------
+        async function showQA() {
+            // Q&A container erstellen
+            const qaDiv = document.createElement('div');
+            qaDiv.className = 'qa-container';
+            const questions = t('qaQuestions');
+            questions.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'qa-card';
+                card.innerHTML = `
+                    <div class="qa-card-inner">
+                        <div class="qa-card-front">${item.q}</div>
+                        <div class="qa-card-back">${item.a}</div>
+                    </div>`;
+                card.addEventListener('click', () => {
+                    card.classList.toggle('flipped');
+                });
+                qaDiv.appendChild(card);
+            });
+            output.appendChild(qaDiv);
+            await addLine(' ', 'output');
+            await addLine(currentLang === 'de' ? 'Klicke auf eine Karte, um die Antwort zu sehen.' : 'Click a card to reveal the answer.', 'info');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // ---------- Boot-Sequenz (sprachabhängig) ----------
         async function bootSequence() {
             await delay(400);
-            await addLine('Linux version 6.5.0-saddem-amd64  #1 SMP PREEMPT', 'output');
+            await addLine(t('bootLine1'), 'output');
             await delay(150);
-            await addLine('[    0.000] Initializing subject profile...', 'output');
+            await addLine(t('bootInit'), 'output');
             await delay(200);
-            await addLine('[    0.312] Loading biographical data from /proc/saddem', 'output');
+            await addLine(t('bootLoadBio'), 'output');
             await delay(300);
-            await addLine('[    0.891] ✓ Kernel modules loaded successfully', 'success gap');
+            await addLine(t('bootModules'), 'success gap');
             await delay(500);
 
             await typeCommand('./identify --subject Saddem_Yousfi --verbose');
             await delay(300);
             await addLine('', 'output');
-            await addLine('┌─────────────────────────────────────────┐', 'output');
-            await addLine('│         SUBJECT IDENTIFICATION          │', 'output');
-            await addLine('└─────────────────────────────────────────┘', 'output');
+            await addLine(t('identTitle'), 'output');
+            await addLine(t('identSubTitle'), 'output');
+            await addLine(t('identTitle'), 'output');
             await delay(200);
-            await addLine('  NAME    : Saddem Yousfi', 'bright');
+            await addLine(t('identName'), 'bright');
             await delay(100);
-            await addLine('  ORIGIN  : Sousse, Tunisia  →  Tunis, Tunisia', 'output');
+            await addLine(t('identOrigin'), 'output');
             await delay(100);
-            await addLine('  ROLE    : Software QA Engineer (in training)', 'info');
+            await addLine(t('identRole'), 'info');
             await delay(100);
-            await addLine('  TARGET  : Fachinformatiker Ausbildung 2026 🇩🇪', 'warn');
+            await addLine(t('identTarget'), 'warn');
             await delay(400);
 
             await addLine('', 'output');
-            await typeCommand('calc_age --dob 1996-10-25 --realtime');
+            await typeCommand(t('ageCommand'));
             await delay(300);
 
             const ageCard = document.createElement('div');
             ageCard.className = 'age-card';
             ageCard.innerHTML = `
                 <div class="age-big">${calcAge()}</div>
-                <div class="age-label">Jahre alt  ·  geboren am 25. Oktober 1996</div>
+                <div class="age-label">${t('ageYears')}  ·  ${t('ageBorn')}</div>
                 <div class="age-sub">
-                    ${calcDaysAlive()} Tage gelebt  ·  noch ${calcDaysToBirthday()} Tage bis zum nächsten Geburtstag
+                    ${calcDaysAlive()} ${t('ageDays')}  ·  ${t('ageUntil')} ${calcDaysToBirthday()} ${t('ageUntilSuffix')}
                 </div>`;
             output.appendChild(ageCard);
             showElement(ageCard, 'block');
             await delay(600);
 
             await addLine('', 'output');
-            await typeCommand('./scan_skills --format=grid');
+            await typeCommand(t('scanSkills'));
             await delay(300);
-            await addLine('Scanning installed capabilities...', 'output');
+            await addLine(t('scanText'), 'output');
             await delay(200);
 
             const skillsGrid = document.createElement('div');
             skillsGrid.className = 'skills-grid';
-            const skills = ['Python', 'JavaScript', 'HTML5/CSS3', 'Playwright', 'Selenium', 'Robot FW', 'Postman', 'Git/GitHub', 'Jenkins CI', 'Jira/Xray', 'Linux', 'Agile/Scrum'];
+            const skills = t('skills');
             skills.forEach(s => {
                 const b = document.createElement('div');
                 b.className = 'skill-badge';
@@ -573,35 +809,25 @@
             for (let i = 0; i < badges.length; i++) {
                 await delay(80);
                 badges[i].classList.add('loaded');
-                await addLine(`  [✓] ${skills[i]} — loaded`, 'success');
+                await addLine(`  [✓] ${skills[i]} ${t('skillLoaded')}`, 'success');
             }
 
-            // Neue Hobbies-Sektion
             await addLine('', 'output');
-            await addLine('📦 Optional Modules: Interessen & Hobbys', 'output');
-            await addLine('  🎮 Video Games   🍳 Cooking   💻 Tech   🎬 Cinema   ☕ Coffee', 'accent');
+            await addLine(t('hobbiesTitle'), 'output');
+            await addLine(t('hobbiesList'), 'accent');
 
             await delay(600);
             await addLine('', 'output');
-            await addLine('12 / 12 modules loaded  [100%]', 'success');
+            await addLine(t('modulesLoaded'), 'success');
             await delay(400);
 
             await addLine('', 'output');
-            await typeCommand('git log --oneline --career');
+            await typeCommand(t('gitLog'));
             await delay(300);
 
             const tlSection = document.createElement('div');
             tlSection.className = 'timeline-section';
-            const journey = [
-                { year: '2015–2018', role: 'B.A. Englisch & Literatur', org: 'Universität Tunis' },
-                { year: '2020', role: 'B2B Kundenberater', org: 'National Pen GmbH' },
-                { year: '2021', role: 'IT-Korrektor & Übersetzer', org: 'GoMyCode' },
-                { year: '2021–2023', role: 'Kabinenpersonal', org: 'Etihad Airways, Abu Dhabi' },
-                { year: '2024–heute', role: 'Freiberufl. Übersetzer & B2 Deutsch', org: 'Upwork · Boosteno' },
-                { year: '09–10/2025', role: 'IT-Praktikum', org: 'SWS Informatique, Tunis' },
-                { year: '2025–2026', role: 'QA Training + ISTQB CTFL', org: 'Playwright · Selenium · Jenkins' },
-                { year: '2026 →', role: 'Fachinformatiker Ausbildung', org: 'Ziel: Deutschland 🇩🇪' }
-            ];
+            const journey = t('journey');
             journey.forEach((item, i) => {
                 const el = document.createElement('div');
                 el.className = 'tl-item';
@@ -631,8 +857,7 @@
 
             await delay(600);
             await addLine('', 'output');
-            // Ersetzte ungenaue Zeile durch Fakten
-            await addLine('8 Stationen · Mehrsprachig (AR, DE, EN, FR) · Internationale Erfahrung', 'accent');
+            await addLine(t('timelineSummary'), 'accent');
             await delay(500);
 
             await addLine('', 'output');
@@ -641,20 +866,19 @@
 
             const progSection = document.createElement('div');
             progSection.className = 'progress-section';
-            // Nur noch Deutsch & QA – Motivation entfernt
             progSection.innerHTML = `
-                <div class="progress-label">Deutsch-Niveau</div>
+                <div class="progress-label">${t('progressLabelDe')}</div>
                 <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb1"></div></div>
                 <br>
-                <div class="progress-label">QA / Testing Skills</div>
+                <div class="progress-label">${t('progressLabelQA')}</div>
                 <div class="progress-bar-outer"><div class="progress-bar-inner" id="pb2"></div></div>`;
             output.appendChild(progSection);
             showElement(progSection, 'block');
 
             await animateProgress(document.getElementById('pb1'), 80, 800);
-            await addLine('  Deutsch: B2 (TELC certified)', 'output');
+            await addLine(`  ${t('progressDeResult')}`, 'output');
             await animateProgress(document.getElementById('pb2'), 75, 700);
-            await addLine('  QA/Testing: ISTQB CTFL ✓', 'output');
+            await addLine(`  ${t('progressQAResult')}`, 'output');
 
             await delay(600);
             await addLine('', 'output');
@@ -664,11 +888,9 @@
             const cta = document.createElement('div');
             cta.className = 'cta-section';
             cta.innerHTML = `
-                <div class="cta-title">// Bereit für den nächsten Schritt ↗</div>
+                <div class="cta-title">${t('ctaTitle')}</div>
                 <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
-                    Ich suche eine <strong style="color:var(--text)">Fachinformatiker Ausbildung (Anwendungsentwicklung oder Systemintegration)</strong>
-                    ab 2026 in Deutschland. ISTQB zertifiziert, B2 Deutsch, praktische Erfahrung mit
-                    Playwright, Selenium, Jenkins und Agile/Scrum.
+                    ${t('ctaText')}
                 </div>
                 <div class="cta-links">
                     <a class="cta-link" href="https://github.com/SaddemYousfi" target="_blank" rel="noopener">
@@ -689,7 +911,7 @@
 
             await delay(400);
             await addLine('', 'output');
-            await addLine('[  OK  ] Profile loaded. System ready.', 'success');
+            await addLine(t('profileReady'), 'success');
             await addLine('', 'output');
 
             bootFinished = true;
