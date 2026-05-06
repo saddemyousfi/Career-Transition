@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saddem Yousfi - IT Career Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f9; color: #333; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
+        h1 { color: #2c3e50; font-size: 1.5rem; }
+        .timer { font-size: 1.2rem; font-weight: bold; color: #3498db; margin: 1rem 0; }
+        .milestone { background: #e8f4fd; padding: 10px; border-radius: 8px; font-size: 0.9rem; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>IT-Karriere Fortschritt</h1>
+        <p>Zeit seit Beginn der QA-Spezialisierung:</p>
+        <div id="timer" class="timer">Wird berechnet...</div>
+        <div class="milestone">
+            <strong>Status:</strong> B2 Deutsch & ISTQB zertifiziert <br>
+            <strong>Ziel:</strong> Fachinformatiker Ausbildung 2026
+        </div>
+    </div>
+
+    <script>
+        function updateTimer() {
+            const start = new Date('2025-11-01T00:00:00'); // Dein Kursstart
+            const now = new Date();
+            const diff = now - start;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((diff / 1000 / 60) % 60);
+            const secs = Math.floor((diff / 1000) % 60);
+
+            document.getElementById('timer').innerHTML = 
+                `${days} Tage, ${hours} Std, ${mins} Min, ${secs} Sek`;
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
+</body>
+</html>
