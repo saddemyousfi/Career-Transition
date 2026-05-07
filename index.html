@@ -38,7 +38,7 @@
             padding: 2rem 1rem;
             position: relative;
             overflow-x: hidden;
-            pointer-events: none;      /* ← fix: Klicks passieren dem Canvas */
+            pointer-events: none;      /* Klicks passieren dem Canvas */
         }
 
         canvas#matrix {
@@ -49,7 +49,7 @@
             height: 100%;
             z-index: -1;
             opacity: 0.15;
-            pointer-events: auto;      /* ← Canvas nimmt Klicks an */
+            pointer-events: auto;      /* Canvas nimmt Klicks an */
             cursor: crosshair;
         }
 
@@ -71,7 +71,7 @@
             overflow: hidden;
             box-shadow: 0 0 0 1px var(--border-bright), 0 30px 80px rgba(0,0,0,0.7);
             z-index: 1;
-            pointer-events: auto;      /* ← Terminal bleibt klickbar */
+            pointer-events: auto;      /* Terminal bleibt klickbar */
         }
 
         .terminal-bar {
@@ -325,6 +325,7 @@
                 ctaTitle: '// Bereit für den nächsten Schritt ↗',
                 ctaText: 'Ich suche eine <strong>Fachinformatiker Ausbildung (Anwendungsentwicklung oder Systemintegration)</strong> ab 2026 in Deutschland. ISTQB zertifiziert, B2 Deutsch, praktische Erfahrung mit Playwright, Selenium, Jenkins und Agile/Scrum.',
                 profileReady: '[  OK  ] Profil geladen. System bereit.',
+                hint: "Tippe 'hilfe' für eine Liste aller Befehle.",   // <-- NEU
                 helpCmd: 'Verfügbare Befehle:',
                 helpList: [
                     'hilfe        - diese Übersicht',
@@ -391,6 +392,7 @@
                 ctaTitle: '// Ready for the next step ↗',
                 ctaText: 'I am looking for a <strong>Fachinformatiker apprenticeship (application development or system integration)</strong> starting in 2026 in Germany. ISTQB certified, B2 German, practical experience with Playwright, Selenium, Jenkins and Agile/Scrum.',
                 profileReady: '[  OK  ] Profile loaded. System ready.',
+                hint: "Type 'help' for a list of commands.",          // <-- NEU
                 helpCmd: 'Available commands:',
                 helpList: [
                     'help         - this overview',
@@ -783,6 +785,7 @@
             await addLine('', 'output');
             await addLine(t('profileReady'), 'success');
             await addLine('', 'output');
+            await addLine(t('hint'), 'info');   // <-- HINT ANZEIGEN
 
             bootFinished = true;
             createInteractivePrompt();
