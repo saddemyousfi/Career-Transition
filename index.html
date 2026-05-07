@@ -38,7 +38,7 @@
             padding: 2rem 1rem;
             position: relative;
             overflow-x: hidden;
-            pointer-events: none;      /* Klicks passieren dem Canvas */
+            pointer-events: none;
         }
 
         canvas#matrix {
@@ -49,7 +49,7 @@
             height: 100%;
             z-index: -1;
             opacity: 0.15;
-            pointer-events: auto;      /* Canvas nimmt Klicks an */
+            pointer-events: auto;
             cursor: crosshair;
         }
 
@@ -71,7 +71,7 @@
             overflow: hidden;
             box-shadow: 0 0 0 1px var(--border-bright), 0 30px 80px rgba(0,0,0,0.7);
             z-index: 1;
-            pointer-events: auto;      /* Terminal bleibt klickbar */
+            pointer-events: auto;
         }
 
         .terminal-bar {
@@ -325,7 +325,7 @@
                 ctaTitle: '// Bereit für den nächsten Schritt ↗',
                 ctaText: 'Ich suche eine <strong>Fachinformatiker Ausbildung (Anwendungsentwicklung oder Systemintegration)</strong> ab 2026 in Deutschland. ISTQB zertifiziert, B2 Deutsch, praktische Erfahrung mit Playwright, Selenium, Jenkins und Agile/Scrum.',
                 profileReady: '[  OK  ] Profil geladen. System bereit.',
-                hint: "Tippe 'hilfe' für eine Liste aller Befehle.",   // <-- NEU
+                hint: "Tippe 'hilfe' für eine Liste aller Befehle.",
                 helpCmd: 'Verfügbare Befehle:',
                 helpList: [
                     'hilfe        - diese Übersicht',
@@ -392,7 +392,7 @@
                 ctaTitle: '// Ready for the next step ↗',
                 ctaText: 'I am looking for a <strong>Fachinformatiker apprenticeship (application development or system integration)</strong> starting in 2026 in Germany. ISTQB certified, B2 German, practical experience with Playwright, Selenium, Jenkins and Agile/Scrum.',
                 profileReady: '[  OK  ] Profile loaded. System ready.',
-                hint: "Type 'help' for a list of commands.",          // <-- NEU
+                hint: "Type 'help' for a list of commands.",
                 helpCmd: 'Available commands:',
                 helpList: [
                     'help         - this overview',
@@ -449,7 +449,7 @@
                 setTimeout(() => {
                     const div = document.createElement('div');
                     div.className = 'line ' + cls;
-                    div.innerHTML = text;
+                    div.innerHTML = text;   // allows anchor tags
                     output.appendChild(div);
                     requestAnimationFrame(() => div.classList.add('visible'));
                     output.scrollTop = output.scrollHeight;
@@ -570,9 +570,9 @@
                     break;
                 case 'kontakt': case 'contact':
                     await addLine(currentLang==='de'?'Kontakt & Profile:':'Contact & Profiles:', 'bright');
-                    await addLine('  GitHub:  https://github.com/SaddemYousfi', 'info');
-                    await addLine('  LinkedIn: https://linkedin.com/in/saddemyousfi', 'info');
-                    await addLine('  E-Mail:  saddemyoussfi@gmail.com', 'info');
+                    await addLine('  GitHub:  <a href="https://github.com/saddemyousfi" target="_blank" style="color:var(--cyan);text-decoration:underline;">github.com/saddemyousfi</a>', 'info');
+                    await addLine('  LinkedIn: <a href="https://linkedin.com/in/saddemyousfi" target="_blank" style="color:var(--cyan);text-decoration:underline;">linkedin.com/in/saddemyousfi</a>', 'info');
+                    await addLine('  E-Mail:  <a href="mailto:saddemyoussfi@gmail.com" style="color:var(--cyan);text-decoration:underline;">saddemyoussfi@gmail.com</a>', 'info');
                     break;
                 case 'whoami':
                     await addLine('Saddem Yousfi', 'bright');
@@ -586,8 +586,8 @@
                     await addLine(`${calcDaysAlive()} ${t('ageDays')} · ${t('ageUntil')} ${calcDaysToBirthday()} ${t('ageUntilSuffix')}`, 'output');
                     break;
                 case 'projekte': case 'projects':
-                    await addLine(currentLang==='de'?'GitHub Repositories (Platzhalter):':'GitHub Repositories (placeholder):', 'bright');
-                    await addLine('  https://github.com/SaddemYousfi?tab=repositories', 'info');
+                    await addLine('GitHub Repositories:', 'bright');
+                    await addLine('  <a href="https://github.com/saddemyousfi?tab=repositories" target="_blank" style="color:var(--cyan);text-decoration:underline;">github.com/saddemyousfi?tab=repositories</a>', 'info');
                     break;
                 case 'hobbies':
                     await addLine(t('hobbiesTitle'), 'bright');
@@ -765,7 +765,7 @@
             cta.innerHTML = `<div class="cta-title">${t('ctaTitle')}</div>
                 <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">${t('ctaText')}</div>
                 <div class="cta-links">
-                    <a class="cta-link" href="https://github.com/SaddemYousfi" target="_blank" rel="noopener">
+                    <a class="cta-link" href="https://github.com/saddemyousfi" target="_blank" rel="noopener">
                         <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                         GitHub
                     </a>
@@ -785,7 +785,7 @@
             await addLine('', 'output');
             await addLine(t('profileReady'), 'success');
             await addLine('', 'output');
-            await addLine(t('hint'), 'info');   // <-- HINT ANZEIGEN
+            await addLine(t('hint'), 'info');
 
             bootFinished = true;
             createInteractivePrompt();
